@@ -3,6 +3,8 @@
 ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht für alte Browser und langsame Clients.
 "Vanilla" JavaScript, es werden keine Bibliotheken wie jQuery o.Ä. eingesetzt.
 
+Kommuniziert mit CCU.IO über die SimpleAPI
+
 Verwendet die ajax Funktion aus suchjs https://github.com/bevacqua/suchjs
 
 ## Dokumentation
