@@ -3,6 +3,14 @@
 ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht für alte Browser und langsame Clients.
 "Vanilla" JavaScript, es werden keine Bibliotheken wie jQuery o.Ä. eingesetzt.
 
+## Dokumentation
+
+Elemente die mit CCU.IO verknüpft werden sollen benötigen das Attribut data-dp mit einer Datenpunkt-ID.
+
+## Roadmap/Todo
+
+## Changelog
+
 ## Lizenz
 
 Copyright (c) 2014 hobbyquaker [http://hobbyquaker.github.io](http://hobbyquaker.github.io)

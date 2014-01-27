@@ -9,7 +9,7 @@
  *
  */
 
-SlimUI = function() {
+var SlimUI = function() {
     this.version = "0.0.1";
     this.config = {
         pollingInterval: 5000,
@@ -19,7 +19,13 @@ SlimUI = function() {
 };
 
 SlimUI.prototype = {
+    /**
+     *  Array aller verwendeter Datenpunkte
+     */
     dps: [],
+    /**
+     *  Array aller Elemente die mit einem Datenpunkt verknüpft sind
+     */
     dpElems: [],
     /**
      *  Startet SlimUI
@@ -29,8 +35,7 @@ SlimUI.prototype = {
         this.getElements(document);
     },
     /**
-     *  durchsucht das DOM nach Elementen mit dem Attribut data-dp, erzeugt Array aller verwendeten Datenpunkte (dps) und
-     *  aller Elemente (dpElems).
+     *  durchsucht das DOM nach Elementen mit dem Attribut data-dp, füllt die Arrays dps und dpElems
      *
      *
      * @param start
@@ -43,44 +48,66 @@ SlimUI.prototype = {
             var elem = elems[i];
             if (elem.getAttribute("data-dp")) {
 
+                // id Attribut hinzufügen falls nötig
+                if (!elem.getAttribute("id")) {
+                    elem.setAttribute("id", "slim"+count++);
+                }
+
                 var elemObj = {
-                    id: "slim"+count,
+                    id: elem.getAttribute("id"),
                     dp: elem.getAttribute("data-dp"),
                     val: elem.getAttribute("data-val"),
-                    name: elem.nodeName
+                    name: elem.nodeName,
+                    type: elem.type
                 };
                 this.dpElems.push(elemObj);
 
-                // Create list of used datapoints
+                // Liste der verwendeten Datenpunkte erzeugen
                 if (this.dps.indexOf(elemObj.dp) == -1) {
                     this.dps.push(elemObj.dp);
                 }
 
-                // Add id attribute
-                elem.setAttribute("id", "slim"+count++);
-
-                // Add event handler
-                switch (elemObj.name) {
-                    case "BUTTON":
-                        elem.addEventListener("click", function () {
-                            slim.setValue(this.getAttribute("data-dp"), this.getAttribute("data-val"));
-                        }, false);
-                        break;
-                    case "SELECT":
-                        elem.addEventListener("change", function () {
-                            slim.setValue(this.getAttribute("data-dp"), this.options[this.selectedIndex].value);
-                        }, false);
-                        break;
-                    case "INPUT":
-                        elem.addEventListener("change", function () {
-                            slim.setValue(this.getAttribute("data-dp"), this.value);
-                        }, false);
-                        break;
-                }
+                // Event-Handler hinzufügen
+                this.addHandler(elemObj);
 
             }
         }
 
+    },
+    /**
+     * Fügt einen onClick oder onChange Event-Handler zu INPUT und SELECT Elementen hinzu
+     *
+     * @param elemObj
+     */
+    addHandler: function (elemObj) {
+        // Event Handler
+        switch (elemObj.name) {
+            case "SELECT":
+                elem.addEventListener("change", function () {
+                    slim.setValue(this.getAttribute("data-dp"), this.options[this.selectedIndex].value);
+                }, false);
+                break;
+            case "INPUT":
+                switch (elemObj.type) {
+                    case "button":
+                        elem.addEventListener("click", function () {
+                            slim.setValue(this.getAttribute("data-dp"), this.getAttribute("data-val"));
+                        }, false);
+                        break;
+                    case "text":
+                    case "number":
+                        elem.addEventListener("change", function () {
+                            slim.setValue(this.getAttribute("data-dp"), this.value);
+                        }, false);
+                        break;
+                    case "checkbox":
+                        elem.addEventListener("change", function () {
+                            slim.setValue(this.getAttribute("data-dp"), this.checked);
+                        }, false);
+                        break;
+                }
+                break;
+        }
     },
     /**
      * Setzt einen Datenpunkt auf einen bestimmten Wert
@@ -130,6 +157,5 @@ if (!Array.indexOf){
  */
 var slim = new SlimUI();
 
-console.log(slim.version);
 console.log(slim.dps);
 console.log(JSON.stringify(slim.dpElems, null, "  "));
