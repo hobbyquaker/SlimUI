@@ -3,6 +3,8 @@
 ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht für alte Browser und langsame Clients.
 "Vanilla" JavaScript, es werden keine Bibliotheken wie jQuery o.Ä. eingesetzt.
 
+Verwendet die ajax Funktion aus suchjs https://github.com/bevacqua/suchjs
+
 ## Dokumentation
 
 Elemente die mit CCU.IO verknüpft werden sollen benötigen das Attribut data-dp mit einer Datenpunkt-ID.
@@ -10,6 +12,10 @@ Elemente die mit CCU.IO verknüpft werden sollen benötigen das Attribut data-dp
 ## Roadmap/Todo
 
 ## Changelog
+
+### 0.0.2
+* setValue implementiert
+
 
 ## Lizenz
 
