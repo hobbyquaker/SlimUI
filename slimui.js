@@ -10,12 +10,13 @@
  */
 
 var SlimUI = function() {
-    this.version = "0.0.2";
+    this.version = "0.0.3";
     this.config = {
-        pollingInterval: 5000,
-        requiredCcuIoVersion: "1.0.17"
+        pollingInterval: 5000
     };
     this.init();
+    this.pollValues(this);
+    setInterval(function (_this) { _this.pollValues(_this) }, this.config.pollingInterval, this);
 };
 
 SlimUI.prototype = {
@@ -88,7 +89,6 @@ SlimUI.prototype = {
      * @param elemObj
      */
     addHandler: function (elem, elemObj) {
-        // Event Handler
         switch (elemObj.name) {
             case "SELECT":
                 elem.addEventListener("change", function () {
@@ -126,15 +126,56 @@ SlimUI.prototype = {
      *   der Wert
      */
     setValue: function (dp, val) {
-        console.log("setValue("+dp+","+val+")");
         this.ajax("/api/set/"+dp+"?value="+val, {method: "GET"}, function () {});
     },
     /**
      * Fragt den Wert aller Datenpunkte von CCU.IO ab und aktualisiert die Elemente
      *
      */
-    pollValues: function () {
-
+    pollValues: function (_this) {
+        var dps = _this.dps.join(",");
+        _this.ajax("/api/getBulk/"+dps, {method: "GET"}, function (res) {
+            for (var i = 0, l = _this.dpElems.length; i<l; i++) {
+                var elemObj = _this.dpElems[i];
+                if (res[elemObj.dp] !== undefined) {
+                    _this.updateElement(elemObj, res[elemObj.dp]);
+                }
+            }
+        });
+    },
+    /**
+     *  Wert eines Elements updaten
+     *
+     * @param elemObj
+     * @param val
+     */
+    updateElement: function (elemObj, val) {
+        var elem = document.getElementById(elemObj.id);
+        switch (elemObj.name) {
+            case "SELECT":
+                var options = elem.getElementsByTagName("OPTION");
+                for (var i = 0, l = options.length; i < l; i++) {
+                    if (options[i].value == val) {
+                        elem.selectedIndex = i;
+                        break;
+                    }
+                }
+                break;
+            case "INPUT":
+                switch (elemObj.type) {
+                    case "text":
+                    case "number":
+                        elem.value = val;
+                        break;
+                    case "checkbox":
+                        elem.checked = val;
+                        break;
+                }
+                break;
+            case "SPAN":
+                elem.innerHTML = val;
+                break;
+        }
     }
 };
 
@@ -467,13 +508,7 @@ if (typeof JSON !== 'object') {
     mapjax('post');
 }(SlimUI.prototype, XMLHttpRequest);
 
-
 /**
  *  SlimUI initialisieren
  */
 var slim = new SlimUI();
-
-
-
-console.log(slim.dps);
-console.log(JSON.stringify(slim.dpElems, null, "  "));

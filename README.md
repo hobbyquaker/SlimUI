@@ -9,11 +9,33 @@ ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht f
 
 ## Dokumentation
 
+SlimUI benötigt CCU.IO Version >= 1.0.17
+
 Elemente die mit CCU.IO verknüpft werden sollen benötigen das Attribut data-dp mit einer Datenpunkt-ID.
+Folgende Elemente können verknüpft werden:
+
+* input type=checkbox
+* input type=button
+* input type=text
+* input type=number
+* select
+* span
+
+Für Input-Elemente vom Typ Button muss zusätzlich das Attribut data-val angegeben werden das den Wert beinhaltet auf
+den der Datenpunkt gesetzt wird wenn der Button geklickt wird.
+
+Beispiele siehe index.html
 
 ## Roadmap/Todo
 
+* Formatierung von numerischen Werten (Anzahl Nachkommstellen über Attribut data-digits)
+* Toggle Buttons (Attribut data-toggle)
+* Anzeige von Timestamps (Attribut data-ts)
+
 ## Changelog
+
+### 0.0.3
+* pollValues und updateElements implementiert
 
 ### 0.0.2
 * setValue implementiert
