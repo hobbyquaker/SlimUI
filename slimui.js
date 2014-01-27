@@ -1,7 +1,9 @@
 /**
  *      SlimUI
- *  a lightweight framework for CCU.IO WebUIs
+ *  a very lightweight framework for CCU.IO WebUIs
  *  made for old Browsers and slow Clients
+ *
+ *  Vanilla JavaScript, no use of jQuery or other Libraries
  *
  *  Copyright (c) 2014 Hobbyquaker
  *
@@ -9,23 +11,38 @@
 
 SlimUI = function() {
     this.version = "0.0.1";
+    this.config = {
+        pollingInterval: 5000,
+        requiredCcuIoVersion: "1.0.17"
+    };
+    this.init();
 };
 
 SlimUI.prototype = {
     dps: [],
     dpElems: [],
+    /**
+     *  Startet SlimUI
+     *
+     */
     init: function () {
         this.getElements(document);
     },
+    /**
+     *  durchsucht das DOM nach Elementen mit dem Attribut data-dp, erzeugt Array aller verwendeten Datenpunkte (dps) und
+     *  aller Elemente (dpElems).
+     *
+     *
+     * @param start
+     *  DOM Objekt unter welchem Elemente gesucht werden - üblicherweise: document
+     */
     getElements: function (start) {
         var elems = start.getElementsByTagName('*');
-
         var count = 0;
         for (var i = 0, l = elems.length; i < l; i++) {
             var elem = elems[i];
             if (elem.getAttribute("data-dp")) {
 
-                // Create list of objects
                 var elemObj = {
                     id: "slim"+count,
                     dp: elem.getAttribute("data-dp"),
@@ -65,18 +82,38 @@ SlimUI.prototype = {
         }
 
     },
+    /**
+     * Setzt einen Datenpunkt auf einen bestimmten Wert
+     *
+     * @param dp
+     *   die ID des Datenpunkts
+     * @param val
+     *   der Wert
+     */
     setValue: function (dp, val) {
         alert("setValue("+dp+","+val+")");
     },
+    /**
+     * Fragt den Wert aller Datenpunkte von CCU.IO ab und aktualisiert die Elemente
+     *
+     */
     pollValues: function () {
 
     },
+    /**
+     * Helper für Ajax Get Requests
+     *
+     * @param url
+     * @param cb
+     */
     ajaxGet: function (url, cb) {
 
     }
 };
 
-// Add indexOf Method if necessary
+/**
+ * Falls der Browser Array.indexOf nicht unterstützt wird diese Methode ergänzt
+ */
 if (!Array.indexOf){
     Array.prototype.indexOf = function(obj){
         for(var i=0; i<this.length; i++){
@@ -88,10 +125,11 @@ if (!Array.indexOf){
     }
 }
 
-
+/**
+ *  SlimUI initialisieren
+ */
 var slim = new SlimUI();
 
-slim.init();
-
+console.log(slim.version);
 console.log(slim.dps);
 console.log(JSON.stringify(slim.dpElems, null, "  "));
