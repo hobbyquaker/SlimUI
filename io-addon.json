@@ -1,0 +1,9 @@
+{
+    "version": "0.0.3",
+    "name": "SlimUI",
+    "ident": "SLIMUI",
+    "dirname": "slimui",
+    "urlHomepage": "http://ccu.io/addons.html#SlimUI",
+    "urlDownload": "https://github.com/hobbyquaker/SlimUI/archive/master.zip",
+    "urlMeta": "https://raw.github.com/hobbyquaker/SlimUI/master/io-addon.json"
+}
