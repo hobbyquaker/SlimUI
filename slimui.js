@@ -1,18 +1,22 @@
-// Add indexOf Method if necessary
-if (!Array.indexOf){
-    Array.prototype.indexOf = function(obj){
-        for(var i=0; i<this.length; i++){
-            if(this[i]==obj){
-                return i;
-            }
-        }
-        return -1;
-    }
-}
+/**
+ *      SlimUI
+ *  a lightweight framework for CCU.IO WebUIs
+ *  made for old Browsers and slow Clients
+ *
+ *  Copyright (c) 2014 Hobbyquaker
+ *
+ */
 
-var slim = {
+SlimUI = function() {
+    this.version = "0.0.1";
+};
+
+SlimUI.prototype = {
     dps: [],
     dpElems: [],
+    init: function () {
+        this.getElements(document);
+    },
     getElements: function (start) {
         var elems = start.getElementsByTagName('*');
 
@@ -72,13 +76,22 @@ var slim = {
     }
 };
 
+// Add indexOf Method if necessary
+if (!Array.indexOf){
+    Array.prototype.indexOf = function(obj){
+        for(var i=0; i<this.length; i++){
+            if(this[i]==obj){
+                return i;
+            }
+        }
+        return -1;
+    }
+}
 
 
+var slim = new SlimUI();
 
-
-
-
-slim.getElements(document);
+slim.init();
 
 console.log(slim.dps);
 console.log(JSON.stringify(slim.dpElems, null, "  "));

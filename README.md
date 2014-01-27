@@ -5,7 +5,7 @@ ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht f
 
 ## Lizenz
 
-Copyright (c) 2013 hobbyquaker [http://hobbyquaker.github.io](http://hobbyquaker.github.io)
+Copyright (c) 2014 hobbyquaker [http://hobbyquaker.github.io](http://hobbyquaker.github.io)
 
 Lizenz: [CC BY-NC 3.0](http://creativecommons.org/licenses/by-nc/3.0/de/)
 
