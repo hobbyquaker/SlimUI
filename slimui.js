@@ -9,11 +9,12 @@
  *
  */
 
-!function () {
+(function () {
+
     var SlimUI = function() {
-        this.version = "0.0.4";
+        this.version = "1.0.0";
         this.config = {
-            pollingInterval: 5000
+            pollingInterval: 3000
         };
         this.init();
         this.pollValues();
@@ -23,8 +24,6 @@
             that.pollValues();
         }, this.config.pollingInterval);
     };
-
-
 
     SlimUI.prototype = {
         /**
@@ -69,9 +68,12 @@
                         id: elem.getAttribute("id"),
                         dp: elem.getAttribute("data-dp"),
                         val: elem.getAttribute("data-val"),
+                        digits: parseInt(elem.getAttribute("data-digits"), 10),
+                        timestamp: elem.getAttribute("data-timestamp"),
                         name: elem.nodeName,
                         type: elem.type
                     };
+                    console.log(elemObj);
                     this.dpElems.push(elemObj);
 
                     /**
@@ -115,9 +117,17 @@
                 case "INPUT":
                     switch (elemObj.type) {
                         case "button":
-                            elem.addEventListener(ieOn+"click", function () {
-                                that.setValue(elem.getAttribute("data-dp"), elem.getAttribute("data-val"));
-                            }, false);
+                            var val = elem.getAttribute("data-val"),
+                                toggle = elem.getAttribute("data-toggle");
+                            if (toggle) {
+                                elem.addEventListener(ieOn+"click", function () {
+                                    that.toggleValue(elem.getAttribute("data-dp"));
+                                }, false);
+                            } else {
+                                elem.addEventListener(ieOn+"click", function () {
+                                    that.setValue(elem.getAttribute("data-dp"), val);
+                                }, false);
+                            }
                             break;
                         case "text":
                         case "number":
@@ -146,6 +156,15 @@
             ajaxGet("/api/set/"+dp+"?value="+val);
         },
         /**
+         * Datenpunkt Toggle
+         *
+         * @param dp
+         *   die ID des Datenpunkts
+         */
+        toggleValue: function (dp) {
+            ajaxGet("/api/toggle/"+dp+"?");
+        },
+        /**
          * Fragt den Wert aller Datenpunkte von CCU.IO ab und aktualisiert die Elemente
          *
          */
@@ -168,7 +187,13 @@
          * @param val
          */
         updateElement: function (elemObj, val) {
+            console.log("updateElement "+JSON.stringify(elemObj)+" "+JSON.stringify(val));
             var elem = document.getElementById(elemObj.id);
+            if (elemObj.timestamp) {
+                val = val.ts;
+            } else {
+                val = val.val;
+            }
             switch (elemObj.name) {
                 case "SELECT":
                     var options = elem.getElementsByTagName("OPTION");
@@ -183,6 +208,10 @@
                     switch (elemObj.type) {
                         case "text":
                         case "number":
+                            if (!isNaN(elemObj.digits)) {
+                                console.log(elemObj.digits);
+                                val = parseFloat(val).toFixed(elemObj.digits);
+                            }
                             elem.value = val;
                             break;
                         case "checkbox":
@@ -191,6 +220,10 @@
                     }
                     break;
                 case "SPAN":
+                    if (!isNaN(elemObj.digits)) {
+                        console.log(elemObj.digits);
+                        val = parseFloat(val).toFixed(elemObj.digits);
+                    }
                     elem.innerHTML = val;
                     break;
             }
@@ -237,10 +270,12 @@
     function ajaxGet(url, cb) {
         var ts = (new Date()).getTime();
         url = url + "&ts" + ts;
+        console.log(url);
         xmlHttp = new XMLHttpRequest();
         xmlHttp.open('GET', url, true);
         xmlHttp.onreadystatechange = function () {
             if (xmlHttp.readyState == 4) {
+                console.log(xmlHttp.responseText);
                 if (cb) {
                     cb(JSON.parse(xmlHttp.responseText));
                 }
@@ -474,6 +509,6 @@
      *  SlimUI initialisieren
      */
     var slim = new SlimUI();
-}();
+})();
 
 
