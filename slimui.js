@@ -1,28 +1,26 @@
 /**
- *      SlimUI
- *  a very lightweight framework for CCU.IO WebUIs
- *  made for old Browsers and slow Clients
+ *      SlimUI 1.0.0
+ *  https://github.com/hobbyquaker/SlimUI
+ *
+ *  a very lightweight framework for CCU.IO WebUIs - made for old Browsers and slow Clients
  *
  *  Vanilla JavaScript, no use of jQuery or other Libraries
  *
- *  Copyright (c) 2014 Hobbyquaker
+ *  requires CCU.IO version >= 1.0.21
  *
+ *  Copyright (c) 2014 Hobbyquaker
+ *  License: CC BY-NC 3.0 - http://creativecommons.org/licenses/by-nc/3.0/
  */
 
 (function () {
 
     var SlimUI = function() {
-        this.version = "1.0.0";
-        this.config = {
-            pollingInterval: 3000
-        };
         this.init();
         this.pollValues();
-
         var that = this;
         setInterval(function () {
             that.pollValues();
-        }, this.config.pollingInterval);
+        }, 3000);
     };
 
     SlimUI.prototype = {

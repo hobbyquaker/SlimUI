@@ -4,7 +4,7 @@ ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht f
 "Vanilla" JavaScript, es werden keine Bibliotheken wie jQuery o.Ä. eingesetzt.
 
 * Kommuniziert mit CCU.IO über die SimpleAPI (nur Ajax, keine Websockets)
-* sehr kompakt: Weniger als 350 Zeilen Code, minifiziert nur 5,7kB groß
+* sehr kompakt: weniger als 350 Zeilen Code, minifiziert nur 5,5kB groß
 * Verwendet Douglas Crockfords json2.js falls der Browser kein JSON.parse() unterstützt - https://github.com/douglascrockford/JSON-js
 * hält den globalen Namensraum sauber
 
