@@ -51,6 +51,7 @@ Beispiele siehe index.html
 ### 0.0.4
 * eigener Ajax Wrapper, suchjs rausgeschmissen
 * IE Fixes
+* Firefox Fixes
 
 ### 0.0.3
 * pollValues und updateElements implementiert
