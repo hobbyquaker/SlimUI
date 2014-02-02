@@ -52,9 +52,11 @@ Eine Datenpunkt-ID, ein Datenpunkt Name oder ein Kanalname;DATAPOINT
 
 Beispiele:
 
-```data-dp="12345"
+```
+data-dp="12345"
 data-dp="BidCos-RF.EEQ1234567:1.TEMPERATURE"
-data-dp="Temperatur Garten;TEMPERATURE"```
+data-dp="Temperatur Garten;TEMPERATURE"
+```
 
 #### data-val
 
