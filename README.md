@@ -4,8 +4,22 @@ ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht f
 "Vanilla" JavaScript, es werden keine Bibliotheken wie jQuery o.Ä. eingesetzt.
 
 * Kommuniziert mit CCU.IO über die SimpleAPI (keine Websockets)
-* Verwendet Douglas Crockfords json2.js - https://github.com/douglascrockford/JSON-js
-* Verwendet die ajax Funktion aus suchjs https://github.com/bevacqua/suchjs
+* Verwendet Douglas Crockfords json2.js falls der Browser kein JSON.parse() unterstützt - https://github.com/douglascrockford/JSON-js
+
+## Browser-Kompatibilität
+
+### erfolgreich getestet:
+* Internet Explorer 6 (Windows XP)
+* Internet Explorer 7 (Windows XP)
+* Internet Explorer 8 (Windows XP)
+* Firefox 26 (OSX)
+* Chrome 32 (OSX)
+* Safari 7 (OSX)
+
+### erfolglos getestet - läuft nicht auf:
+* Internet Explorer 5.5 (Windows XP)
+
+bitte meldet Browser auf denen ihr SlimUI getestet habt damit ich diese Liste ergänzen kann.
 
 ## Dokumentation
 
@@ -33,6 +47,10 @@ Beispiele siehe index.html
 * Anzeige von Timestamps (Attribut data-ts)
 
 ## Changelog
+
+### 0.0.4
+* eigener Ajax Wrapper, suchjs rausgeschmissen
+* IE Fixes
 
 ### 0.0.3
 * pollValues und updateElements implementiert

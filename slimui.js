@@ -10,14 +10,20 @@
  */
 
 var SlimUI = function() {
-    this.version = "0.0.3";
+    this.version = "0.0.4";
     this.config = {
         pollingInterval: 5000
     };
     this.init();
-    this.pollValues(this);
-    setInterval(function (_this) { _this.pollValues(_this) }, this.config.pollingInterval, this);
+    this.pollValues();
+
+    var that = this;
+    setInterval(function () {
+        that.pollValues();
+    }, this.config.pollingInterval);
 };
+
+
 
 SlimUI.prototype = {
     /**
@@ -89,28 +95,38 @@ SlimUI.prototype = {
      * @param elemObj
      */
     addHandler: function (elem, elemObj) {
+
+        // IE <= 8
+        if (!elem.addEventListener) {
+            elem.addEventListener = elem.attachEvent;
+            var ieOn = "on";
+        } else {
+            var ieOn = "";
+        }
+
+        var that = this;
         switch (elemObj.name) {
             case "SELECT":
-                elem.addEventListener("change", function () {
-                    slim.setValue(this.getAttribute("data-dp"), this.options[this.selectedIndex].value);
+                elem.addEventListener(ieOn+"change", function () {
+                    that.setValue(elem.getAttribute("data-dp"), elem.options[elem.selectedIndex].value);
                 }, false);
                 break;
             case "INPUT":
                 switch (elemObj.type) {
                     case "button":
-                        elem.addEventListener("click", function () {
-                            slim.setValue(this.getAttribute("data-dp"), this.getAttribute("data-val"));
+                        elem.addEventListener(ieOn+"click", function () {
+                            that.setValue(elem.getAttribute("data-dp"), elem.getAttribute("data-val"));
                         }, false);
                         break;
                     case "text":
                     case "number":
-                        elem.addEventListener("change", function () {
-                            slim.setValue(this.getAttribute("data-dp"), this.value);
+                        elem.addEventListener(ieOn+"change", function () {
+                            that.setValue(elem.getAttribute("data-dp"), elem.value);
                         }, false);
                         break;
                     case "checkbox":
-                        elem.addEventListener("change", function () {
-                            slim.setValue(this.getAttribute("data-dp"), this.checked);
+                        elem.addEventListener(ieOn+"click", function (event) {
+                            that.setValue(elem.getAttribute("data-dp"), elem.checked ? 1 : 0);
                         }, false);
                         break;
                 }
@@ -126,15 +142,16 @@ SlimUI.prototype = {
      *   der Wert
      */
     setValue: function (dp, val) {
-        this.ajax("/api/set/"+dp+"?value="+val, {method: "GET"}, function () {});
+        ajaxGet("/api/set/"+dp+"?value="+val);
     },
     /**
      * Fragt den Wert aller Datenpunkte von CCU.IO ab und aktualisiert die Elemente
      *
      */
-    pollValues: function (_this) {
+    pollValues: function () {
+        var _this = this;
         var dps = _this.dps.join(",");
-        _this.ajax("/api/getBulk/"+dps, {method: "GET"}, function (res) {
+        ajaxGet("/api/getBulk/"+dps+"?", function (res) {
             for (var i = 0, l = _this.dpElems.length; i<l; i++) {
                 var elemObj = _this.dpElems[i];
                 if (res[elemObj.dp] !== undefined) {
@@ -191,6 +208,44 @@ if (!Array.indexOf){
         }
         return -1;
     }
+}
+
+/**
+ *  Ajax
+ */
+if (typeof XMLHttpRequest === "undefined") {
+    XMLHttpRequest = function () {
+        try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); }
+        catch (e) {}
+        try { return new ActiveXObject("Msxml2.XMLHTTP.3.0"); }
+        catch (e) {}
+        try { return new ActiveXObject("Msxml2.XMLHTTP"); }
+        catch (e) {}
+        try { return new ActiveXObject("Microsoft.XMLHTTP"); }
+        catch (e) {}
+        throw new Error("This browser does not support AJAX.");
+    };
+}
+
+/**
+ * ajaxGet() - einen HTTP GET request durchführen
+ *
+ * @param url - muss ein Fragezeichen beinhalten!
+ * @param cb
+ */
+function ajaxGet(url, cb) {
+    var ts = (new Date()).getTime();
+    url = url + "&ts" + ts;
+    xmlHttp = new XMLHttpRequest();
+    xmlHttp.open('GET', url, true);
+    xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4) {
+            if (cb) {
+                cb(JSON.parse(xmlHttp.responseText));
+            }
+        }
+    };
+    xmlHttp.send(null);
 }
 
 /**
@@ -413,100 +468,6 @@ if (typeof JSON !== 'object') {
     }
 }());
 
-/**
- * Ajax Funktion aus suchjs - https://github.com/bevacqua/suchjs
- */
-// ajax
-!function ($, XMLHttpRequest) {
-    $.ajax = function (url, options, done) {
-        var method = options.method.toUpperCase();
-        var xhr = new XMLHttpRequest();
-        xhr.responseType = options.responseType || 'json';
-        xhr.open(method, compose(url), true);
-        xhr.addEventListener('load', function () {
-            var res = xhr.response; try { res = JSON.parse(res); } catch (e) {}
-            done(res, xhr.status, xhrWrap());
-        });
-        xhr.addEventListener('error', function () {
-            done(null, xhr.status, xhrWrap());
-        });
-        Object.keys(options.headers || {}).forEach(function (key) {
-            xhr.setRequestHeader(key, options.headers[key]);
-        });
-        xhr.send(data());
-
-        function compose (url) {
-            if (method !== 'GET' || !options.data) {
-                return url;
-            }
-            var params = Object.keys(options.data).map(function (key) {
-                return key + '=' + options.data[key];
-            }).join('&');
-            var connector = '?';
-            var query = url.lastIndexOf('?');
-            if (query !== -1) {
-                connector = (query === url.length - 1) ? '' : '&';
-            }
-            return url + connector + params;
-        }
-
-        function data () {
-            if (method !== 'GET' && options.data) {
-                var form = new FormData();
-                Object.keys(options.data).forEach(function (key) {
-                    form.append(key, JSON.stringify(options.data));
-                });
-            }
-        }
-        function xhrWrap () { return { headers: getHeaders(), original: xhr }; }
-
-        function getHeaders () {
-            return xhr.getAllResponseHeaders().split('\n').reduce(function (headers, header) {
-                if (header.length) {
-                    var sep = ': ';
-                    var parts = header.split(sep);
-                    var name = parts.shift();
-                    var value = parts.join(sep);
-                    if (name === 'Link') {
-                        headers.Link = parseLinkHeader(value);
-                    } else {
-                        headers[name] = value;
-                    }
-                }
-                return headers;
-            }, {});
-        }
-
-        function parseLinkHeader (header) {
-            var parts = header.split(',');
-            var urlPart = /<(.*)>/;
-            var relPart = /rel=['"](.*)['"]/i;
-            return parts.reduce(function (links, part) {
-                var pieces = part.split(';');
-                var url = pieces[0].match(urlPart, '$1');
-                var rel = pieces[1].match(relPart, '$1');
-                if (url && url.length && rel && rel.length) {
-                    links[rel[1]] = url[1];
-                }
-                return links;
-            }, {});
-        }
-    };
-
-    function mapjax (method) {
-        var proper = method.toUpperCase();
-        $[method] = function (url, options, done) {
-            if (done === void 0) {
-                done = options;
-                options = {};
-            }
-            options.method = proper;
-            $.ajax(url, options, done);
-        };
-    }
-    mapjax('get');
-    mapjax('post');
-}(SlimUI.prototype, XMLHttpRequest);
 
 /**
  *  SlimUI initialisieren
