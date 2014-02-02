@@ -3,6 +3,7 @@
 ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht für alte Browser und langsame Clients.
 "Vanilla" JavaScript, es werden keine Bibliotheken wie jQuery o.Ä. eingesetzt.
 
+* Weniger als 500 Zeilen Code, minifiziert nur 5,7kB groß
 * Kommuniziert mit CCU.IO über die SimpleAPI (keine Websockets)
 * Verwendet Douglas Crockfords json2.js falls der Browser kein JSON.parse() unterstützt - https://github.com/douglascrockford/JSON-js
 
@@ -16,7 +17,7 @@ ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht f
 * Chrome 32 (OSX)
 * Safari 7 (OSX)
 
-### erfolglos getestet - läuft nicht auf:
+### erfolglos getestet - läuft (bisher) nicht auf:
 * Internet Explorer 5.5 (Windows XP)
 
 bitte meldet Browser auf denen ihr SlimUI getestet habt damit ich diese Liste ergänzen kann.
