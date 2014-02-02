@@ -70,10 +70,10 @@
                         val: elem.getAttribute("data-val"),
                         digits: parseInt(elem.getAttribute("data-digits"), 10),
                         timestamp: elem.getAttribute("data-timestamp"),
+                        css: elem.getAttribute("data-class"),
                         name: elem.nodeName,
                         type: elem.type
                     };
-                    console.log(elemObj);
                     this.dpElems.push(elemObj);
 
                     /**
@@ -99,12 +99,12 @@
          */
         addHandler: function (elem, elemObj) {
 
+            var ieOn = "";
+
             // IE <= 8
             if (!elem.addEventListener) {
                 elem.addEventListener = elem.attachEvent;
-                var ieOn = "on";
-            } else {
-                var ieOn = "";
+                ieOn = "on";
             }
 
             var that = this;
@@ -113,6 +113,19 @@
                     elem.addEventListener(ieOn+"change", function () {
                         that.setValue(elem.getAttribute("data-dp"), elem.options[elem.selectedIndex].value);
                     }, false);
+                    break;
+                case "BUTTON":
+                    var val = elem.getAttribute("data-val"),
+                        toggle = elem.getAttribute("data-toggle");
+                    if (toggle) {
+                        elem.addEventListener(ieOn+"click", function () {
+                            that.toggleValue(elem.getAttribute("data-dp"));
+                        }, false);
+                    } else {
+                        elem.addEventListener(ieOn+"click", function () {
+                            that.setValue(elem.getAttribute("data-dp"), val);
+                        }, false);
+                    }
                     break;
                 case "INPUT":
                     switch (elemObj.type) {
@@ -153,7 +166,7 @@
          *   der Wert
          */
         setValue: function (dp, val) {
-            ajaxGet("/api/set/"+dp+"?value="+val);
+            this.ajaxGet("/api/set/"+dp+"?value="+val);
         },
         /**
          * Datenpunkt Toggle
@@ -162,7 +175,7 @@
          *   die ID des Datenpunkts
          */
         toggleValue: function (dp) {
-            ajaxGet("/api/toggle/"+dp+"?");
+            this.ajaxGet("/api/toggle/"+dp+"?");
         },
         /**
          * Fragt den Wert aller Datenpunkte von CCU.IO ab und aktualisiert die Elemente
@@ -171,7 +184,7 @@
         pollValues: function () {
             var _this = this;
             var dps = _this.dps.join(",");
-            ajaxGet("/api/getBulk/"+dps+"?", function (res) {
+            this.ajaxGet("/api/getBulk/"+dps+"?", function (res) {
                 for (var i = 0, l = _this.dpElems.length; i<l; i++) {
                     var elemObj = _this.dpElems[i];
                     if (res[elemObj.dp] !== undefined) {
@@ -187,7 +200,6 @@
          * @param val
          */
         updateElement: function (elemObj, val) {
-            console.log("updateElement "+JSON.stringify(elemObj)+" "+JSON.stringify(val));
             var elem = document.getElementById(elemObj.id);
             if (elemObj.timestamp) {
                 val = val.ts;
@@ -205,11 +217,11 @@
                     }
                     break;
                 case "INPUT":
+                    if (elem === document.activeElement) break;
                     switch (elemObj.type) {
                         case "text":
                         case "number":
                             if (!isNaN(elemObj.digits)) {
-                                console.log(elemObj.digits);
                                 val = parseFloat(val).toFixed(elemObj.digits);
                             }
                             elem.value = val;
@@ -220,13 +232,39 @@
                     }
                     break;
                 case "SPAN":
-                    if (!isNaN(elemObj.digits)) {
-                        console.log(elemObj.digits);
-                        val = parseFloat(val).toFixed(elemObj.digits);
+                case "DIV":
+                    if (elemObj.css) {
+                        val = val.toString().replace(/\./, "_");
+                        var classes = elem.className.replace(new RegExp("(?:^|[ ]*)"+elemObj.css+"-[0-9a-zA-Z_-]+(?!\S)", "g"), "");
+                        elem.className = classes += " "+elemObj.css+"-"+val;
+                    } else {
+                        if (!isNaN(elemObj.digits)) {
+                            val = parseFloat(val).toFixed(elemObj.digits);
+                        }
+                        elem.innerHTML = val;
                     }
-                    elem.innerHTML = val;
                     break;
             }
+        },
+        /**
+         * ajaxGet() - einen HTTP GET request durchführen
+         *
+         * @param url - muss ein Fragezeichen beinhalten!
+         * @param cb
+         */
+        ajaxGet: function (url, cb) {
+            var ts = (new Date()).getTime();
+            url = url + "&ts" + ts;
+            xmlHttp = new XMLHttpRequest();
+            xmlHttp.open('GET', url, true);
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState == 4) {
+                    if (cb) {
+                        cb(JSON.parse(xmlHttp.responseText));
+                    }
+                }
+            };
+            xmlHttp.send(null);
         }
     };
 
@@ -245,7 +283,7 @@
     }
 
     /**
-     *  Ajax
+     *  XMLHttpRequest ergänzen für Internet Explorer
      */
     if (typeof XMLHttpRequest === "undefined") {
         XMLHttpRequest = function () {
@@ -257,258 +295,70 @@
             catch (e) {}
             try { return new ActiveXObject("Microsoft.XMLHTTP"); }
             catch (e) {}
+            alert("Dieser Browser unterstützt kein AJAX.");
             throw new Error("This browser does not support AJAX.");
         };
     }
 
     /**
-     * ajaxGet() - einen HTTP GET request durchführen
-     *
-     * @param url - muss ein Fragezeichen beinhalten!
-     * @param cb
-     */
-    function ajaxGet(url, cb) {
-        var ts = (new Date()).getTime();
-        url = url + "&ts" + ts;
-        console.log(url);
-        xmlHttp = new XMLHttpRequest();
-        xmlHttp.open('GET', url, true);
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState == 4) {
-                console.log(xmlHttp.responseText);
-                if (cb) {
-                    cb(JSON.parse(xmlHttp.responseText));
-                }
-            }
-        };
-        xmlHttp.send(null);
-    }
-
-    /**
-     *  JSON.stringify und JSON.parse hinzufügen falls nicht vom Browser unterstützt
-     *
-     *  Douglas Crockfords json2.js - https://github.com/douglascrockford/JSON-js
+     *  JSON.parse ergänzen falls nicht vom Browser unterstützt
+     *  gekürzte Version von Douglas Crockfords json2.js - https://github.com/douglascrockford/JSON-js
      */
     if (typeof JSON !== 'object') {
         JSON = {};
     }
 
-    (function () {
-        'use strict';
+    var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
 
-        function f(n) {
-            return n < 10 ? '0' + n : n;
-        }
+    if (typeof JSON.parse !== 'function') {
+        JSON.parse = function (text, reviver) {
 
-        if (typeof Date.prototype.toJSON !== 'function') {
-
-            Date.prototype.toJSON = function () {
-                return isFinite(this.valueOf())
-                    ? this.getUTCFullYear()     + '-' +
-                    f(this.getUTCMonth() + 1) + '-' +
-                    f(this.getUTCDate())      + 'T' +
-                    f(this.getUTCHours())     + ':' +
-                    f(this.getUTCMinutes())   + ':' +
-                    f(this.getUTCSeconds())   + 'Z'
-                    : null;
-            };
-
-            String.prototype.toJSON      =
-                Number.prototype.toJSON  =
-                    Boolean.prototype.toJSON = function () {
-                        return this.valueOf();
-                    };
-        }
-
-        var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-            escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-            gap,
-            indent,
-            meta = {                '\b': '\\b',
-                '\t': '\\t',
-                '\n': '\\n',
-                '\f': '\\f',
-                '\r': '\\r',
-                '"' : '\\"',
-                '\\': '\\\\'
-            },
-            rep;
-
-        function quote(string) {
-            escapable.lastIndex = 0;
-            return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
-                var c = meta[a];
-                return typeof c === 'string'
-                    ? c
-                    : '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-            }) + '"' : '"' + string + '"';
-        }
-
-        function str(key, holder) {
-
-            var i,
-                k,
-                v,
-                length,
-                mind = gap,
-                partial,
-                value = holder[key];
-
-            if (value && typeof value === 'object' &&
-                typeof value.toJSON === 'function') {
-                value = value.toJSON(key);
-            }
-
-            if (typeof rep === 'function') {
-                value = rep.call(holder, key, value);
-            }
-
-            switch (typeof value) {
-                case 'string':
-                    return quote(value);
-
-                case 'number':
-                    return isFinite(value) ? String(value) : 'null';
-
-                case 'boolean':
-                case 'null':
-                    return String(value);
-
-                case 'object':
-                    if (!value) {
-                        return 'null';
-                    }
-
-                    gap += indent;
-                    partial = [];
-
-                    if (Object.prototype.toString.apply(value) === '[object Array]') {
-
-                        length = value.length;
-                        for (i = 0; i < length; i += 1) {
-                            partial[i] = str(i, value) || 'null';
-                        }
-
-                        v = partial.length === 0
-                            ? '[]'
-                            : gap
-                            ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
-                            : '[' + partial.join(',') + ']';
-                        gap = mind;
-                        return v;
-                    }
-
-                    if (rep && typeof rep === 'object') {
-                        length = rep.length;
-                        for (i = 0; i < length; i += 1) {
-                            if (typeof rep[i] === 'string') {
-                                k = rep[i];
-                                v = str(k, value);
-                                if (v) {
-                                    partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                                }
-                            }
-                        }
-                    } else {
-                        for (k in value) {
-                            if (Object.prototype.hasOwnProperty.call(value, k)) {
-                                v = str(k, value);
-                                if (v) {
-                                    partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                                }
+            var j;
+            function walk(holder, key) {
+                var k, v, value = holder[key];
+                if (value && typeof value === 'object') {
+                    for (k in value) {
+                        if (Object.prototype.hasOwnProperty.call(value, k)) {
+                            v = walk(value, k);
+                            if (v !== undefined) {
+                                value[k] = v;
+                            } else {
+                                delete value[k];
                             }
                         }
                     }
-
-                    v = partial.length === 0
-                        ? '{}'
-                        : gap
-                        ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
-                        : '{' + partial.join(',') + '}';
-                    gap = mind;
-                    return v;
+                }
+                return reviver.call(holder, key, value);
             }
-        }
 
-        if (typeof JSON.stringify !== 'function') {
-            JSON.stringify = function (value, replacer, space) {
+            text = String(text);
+            cx.lastIndex = 0;
+            if (cx.test(text)) {
+                text = text.replace(cx, function (a) {
+                    return '\\u' +
+                        ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                });
+            }
 
-                var i;
-                gap = '';
-                indent = '';
+            if (/^[\],:{}\s]*$/
+                .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+                    .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+                    .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
-                if (typeof space === 'number') {
-                    for (i = 0; i < space; i += 1) {
-                        indent += ' ';
-                    }
+                j = eval('(' + text + ')');
 
-                } else if (typeof space === 'string') {
-                    indent = space;
-                }
+                return typeof reviver === 'function'
+                    ? walk({'': j}, '')
+                    : j;
+            }
 
-                rep = replacer;
-                if (replacer && typeof replacer !== 'function' &&
-                    (typeof replacer !== 'object' ||
-                        typeof replacer.length !== 'number')) {
-                    throw new Error('JSON.stringify');
-                }
-
-                return str('', {'': value});
-            };
-        }
-
-        if (typeof JSON.parse !== 'function') {
-            JSON.parse = function (text, reviver) {
-
-                var j;
-                function walk(holder, key) {
-                    var k, v, value = holder[key];
-                    if (value && typeof value === 'object') {
-                        for (k in value) {
-                            if (Object.prototype.hasOwnProperty.call(value, k)) {
-                                v = walk(value, k);
-                                if (v !== undefined) {
-                                    value[k] = v;
-                                } else {
-                                    delete value[k];
-                                }
-                            }
-                        }
-                    }
-                    return reviver.call(holder, key, value);
-                }
-
-                text = String(text);
-                cx.lastIndex = 0;
-                if (cx.test(text)) {
-                    text = text.replace(cx, function (a) {
-                        return '\\u' +
-                            ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-                    });
-                }
-
-                if (/^[\],:{}\s]*$/
-                    .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-                        .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
-                        .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-
-                    j = eval('(' + text + ')');
-
-                    return typeof reviver === 'function'
-                        ? walk({'': j}, '')
-                        : j;
-                }
-
-                throw new SyntaxError('JSON.parse');
-            };
-        }
-    }());
-
+            throw new SyntaxError('JSON.parse');
+        };
+    }
 
     /**
      *  SlimUI initialisieren
      */
     var slim = new SlimUI();
+
 })();
-
-
