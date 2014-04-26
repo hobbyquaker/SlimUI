@@ -13,18 +13,11 @@ ein sehr leichtgewichtiges Framework zur Erstellung von CCU.IO WebUIs. Gemacht f
 bitte meldet Browser auf denen ihr SlimUI getestet habt damit ich diese Liste ergänzen kann.
 
 ### erfolgreich getestet:
-* Internet Explorer 6 (Windows XP)
-* Internet Explorer 7 (Windows XP)
-* Internet Explorer 8 (Windows XP)
+* Internet Explorer 6, 7, 8 (Windows XP)
 * Opera 10.10 (Windows XP)
 * Firefox 3.6 (Windows XP)
 * Android Browser (Android 4.0.4)
-* Firefox 26 (OSX)
-* Chrome 32 (OSX)
-* Safari 7 (OSX)
-
-### erfolglos getestet - läuft (bisher) nicht auf:
-* Internet Explorer 5.5 (Windows XP)
+* Safari (iOS 4.2.1)
 
 ## Dokumentation
 
